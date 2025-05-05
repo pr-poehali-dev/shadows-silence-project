@@ -1,7 +1,7 @@
 
 import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Position {
   x: number;
@@ -13,7 +13,7 @@ interface Position {
 const ThreeDScene = () => {
   const sceneRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   const [playerPosition, setPlayerPosition] = useState<Position>({
     x: 0,
