@@ -24,6 +24,16 @@ body {
   perspective: 1000px;
 }
 
+/* Сохраняет 3D-трансформации для дочерних элементов */
+.camera, .world {
+  transform-style: preserve-3d;
+}
+
+/* Для создания "взгляда от первого лица" */
+.camera {
+  perspective-origin: 50% 50%;
+}
+
 @keyframes shadowPulse {
   0% { transform: scale(1); opacity: 0.7; }
   50% { transform: scale(1.2); opacity: 0.5; }

@@ -16,10 +16,12 @@ const Index = () => {
       
       {/* Главное содержимое */}
       <main className="container mx-auto px-4 py-10 z-10 flex flex-col items-center justify-center flex-grow text-center">
-        <h1 className="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-200 horror-text">
-          Тени Тишины
-        </h1>
-        <h2 className="text-xl text-purple-300 mb-8">Shadows of Silence</h2>
+        <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg mb-4">
+          <h1 className="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-200 horror-text">
+            Тени Тишины
+          </h1>
+          <h2 className="text-xl text-purple-300 mb-8">Shadows of Silence</h2>
+        </div>
         
         <Card className="max-w-2xl w-full bg-black/40 backdrop-blur-sm border-purple-900/50 p-6 mb-8">
           <p className="text-lg mb-4 text-gray-100">
@@ -40,7 +42,7 @@ const Index = () => {
           onClick={() => navigate('/preparation')}
         >
           <Icon name="Play" className="mr-2" />
-          Начать игру
+          Начать историю
         </Button>
       </main>
       
