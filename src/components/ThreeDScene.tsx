@@ -1,151 +1,90 @@
 
 import { useRef, useEffect } from 'react';
-import * as THREE from 'three';
+import { useNavigate } from 'react-router-dom';
 
 interface ThreeDSceneProps {
   className?: string;
 }
 
 const ThreeDScene = ({ className = '' }: ThreeDSceneProps) => {
-  const mountRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   
   useEffect(() => {
-    if (!mountRef.current) return;
+    if (!sceneRef.current) return;
     
-    // Инициализация сцены
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x080810);
-    scene.fog = new THREE.FogExp2(0x080810, 0.05);
-    
-    // Настройка камеры
-    const camera = new THREE.PerspectiveCamera(
-      60, 
-      window.innerWidth / window.innerHeight, 
-      0.1, 
-      100
-    );
-    camera.position.set(0, 1.6, 5);
-    
-    // Настройка рендерера
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    mountRef.current.appendChild(renderer.domElement);
-    
-    // Добавление света
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    scene.add(ambientLight);
-    
-    const directionalLight = new THREE.DirectionalLight(0x9050ff, 0.8);
-    directionalLight.position.set(5, 10, 7.5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
-    
-    const pointLight = new THREE.PointLight(0x7030a0, 1, 10);
-    pointLight.position.set(0, 2, -2);
-    scene.add(pointLight);
-    
-    // Создание коридора комплекса
-    const corridorLength = 20;
-    const corridorWidth = 3;
-    const corridorHeight = 3;
-    
-    // Пол
-    const floorGeometry = new THREE.PlaneGeometry(corridorWidth, corridorLength);
-    const floorMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x222222, 
-      roughness: 0.8 
-    });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.z = -corridorLength / 2 + 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-    
-    // Стены
-    const wallMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x333333, 
-      roughness: 0.7 
-    });
-    
-    // Левая стена
-    const leftWallGeometry = new THREE.PlaneGeometry(corridorLength, corridorHeight);
-    const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
-    leftWall.position.set(-corridorWidth / 2, corridorHeight / 2, -corridorLength / 2 + 2);
-    leftWall.rotation.y = Math.PI / 2;
-    leftWall.castShadow = true;
-    leftWall.receiveShadow = true;
-    scene.add(leftWall);
-    
-    // Правая стена
-    const rightWallGeometry = new THREE.PlaneGeometry(corridorLength, corridorHeight);
-    const rightWall = new THREE.Mesh(rightWallGeometry, wallMaterial);
-    rightWall.position.set(corridorWidth / 2, corridorHeight / 2, -corridorLength / 2 + 2);
-    rightWall.rotation.y = -Math.PI / 2;
-    rightWall.castShadow = true;
-    rightWall.receiveShadow = true;
-    scene.add(rightWall);
-    
-    // Потолок
-    const ceilingGeometry = new THREE.PlaneGeometry(corridorWidth, corridorLength);
-    const ceilingMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x111111, 
-      roughness: 0.9 
-    });
-    const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-    ceiling.position.set(0, corridorHeight, -corridorLength / 2 + 2);
-    ceiling.rotation.x = Math.PI / 2;
-    ceiling.receiveShadow = true;
-    scene.add(ceiling);
-    
-    // Таинственная тень
-    const shadowGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const shadowMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      transparent: true,
-      opacity: 0.7
-    });
-    const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
-    shadow.position.set(0, 0.5, -10);
-    scene.add(shadow);
-    
-    // Анимация
-    const animate = () => {
-      requestAnimationFrame(animate);
+    // Добавляем обработчик движения мыши для создания эффекта параллакса
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!sceneRef.current) return;
       
-      // Анимация тени
-      const time = Date.now() * 0.001;
-      shadow.position.x = Math.sin(time) * 1.2;
-      shadow.position.y = 0.5 + Math.sin(time * 0.7) * 0.3;
+      const mouseX = e.clientX / window.innerWidth - 0.5;
+      const mouseY = e.clientY / window.innerHeight - 0.5;
       
-      // Пульсация света
-      pointLight.intensity = 1 + Math.sin(time * 2) * 0.3;
+      // Стены и пол
+      const walls = sceneRef.current.querySelectorAll('.wall');
+      walls.forEach(wall => {
+        const element = wall as HTMLElement;
+        element.style.transform = `translateX(${mouseX * -20}px) translateY(${mouseY * -20}px)`;
+      });
       
-      renderer.render(scene, camera);
-    };
-    
-    // Обработка изменения размера окна
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    animate();
-    
-    // Очистка при размонтировании
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (mountRef.current) {
-        mountRef.current.removeChild(renderer.domElement);
+      // Тень
+      const shadow = sceneRef.current.querySelector('.shadow') as HTMLElement;
+      if (shadow) {
+        shadow.style.transform = `translateX(${mouseX * 40}px) translateY(${mouseY * 40}px)`;
       }
+    };
+    
+    // Анимация тени
+    let animationId: number;
+    const animateShadow = () => {
+      if (!sceneRef.current) return;
+      const shadow = sceneRef.current.querySelector('.shadow') as HTMLElement;
+      
+      if (shadow) {
+        const time = Date.now() * 0.001;
+        shadow.style.opacity = (0.5 + Math.sin(time) * 0.2).toString();
+      }
+      
+      animationId = requestAnimationFrame(animateShadow);
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    animationId = requestAnimationFrame(animateShadow);
+    
+    // Очистка обработчиков
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationId);
     };
   }, []);
   
-  return <div ref={mountRef} className={`absolute inset-0 z-0 ${className}`} />;
+  return (
+    <div ref={sceneRef} className={`absolute inset-0 z-0 perspective overflow-hidden ${className}`}>
+      {/* 3D коридор */}
+      <div className="relative w-full h-full">
+        {/* Пол */}
+        <div className="wall absolute left-0 right-0 bottom-0 h-[30vh] bg-gradient-to-t from-gray-900 to-gray-800 origin-bottom transform rotateX(70deg) translateY(10vh)"></div>
+        
+        {/* Левая стена */}
+        <div className="wall absolute top-0 bottom-0 left-0 w-[10vw] bg-gradient-to-r from-purple-900/30 to-gray-800/20 origin-left transform rotateY(20deg) translateX(-5vw)"></div>
+        
+        {/* Правая стена */}
+        <div className="wall absolute top-0 bottom-0 right-0 w-[10vw] bg-gradient-to-l from-purple-900/30 to-gray-800/20 origin-right transform rotateY(-20deg) translateX(5vw)"></div>
+        
+        {/* Потолок */}
+        <div className="wall absolute left-0 right-0 top-0 h-[25vh] bg-gradient-to-b from-gray-900 to-gray-800 origin-top transform rotateX(-70deg) translateY(-5vh)"></div>
+        
+        {/* Таинственная тень */}
+        <div className="shadow absolute top-1/2 left-1/2 w-16 h-16 -ml-8 -mt-8 rounded-full bg-black/70 blur-md transition-transform duration-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-black/90 blur-sm"></div>
+        </div>
+        
+        {/* Световые эффекты */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 -ml-48 -mt-48 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 -mr-32 -mb-32 bg-indigo-500/10 rounded-full blur-3xl animate-pulse"></div>
+      </div>
+    </div>
+  );
 };
 
 export default ThreeDScene;

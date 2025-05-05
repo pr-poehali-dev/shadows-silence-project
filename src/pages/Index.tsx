@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,7 +16,7 @@ const Index = () => {
       
       {/* Главное содержимое */}
       <main className="container mx-auto px-4 py-10 z-10 flex flex-col items-center justify-center flex-grow text-center">
-        <h1 className="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-200">
+        <h1 className="text-6xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-200 horror-text">
           Тени Тишины
         </h1>
         <h2 className="text-xl text-purple-300 mb-8">Shadows of Silence</h2>
